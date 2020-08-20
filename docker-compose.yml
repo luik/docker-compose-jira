@@ -1,0 +1,38 @@
+version: '3'
+services:
+  mysql:
+    image: mysql:5.7
+    ports:
+      - [MYSQL-PORT]:3306
+    volumes:
+      - ./mysql_data:/var/lib/mysql
+      - ./my-custom.cnf:/etc/mysql/conf.d/my-custom.cnf
+    environment:
+      MYSQL_DATABASE: [JIRA-DB]
+      MYSQL_ROOT_PASSWORD: [DB-ROOT-PASS]
+      MYSQL_USER: [DB-USER]
+      MYSQL_PASSWORD: [DB-USER-PASS]
+    restart: always
+  jira:
+    image: atlassian/jira-software:8.11
+    volumes:
+      - ./jira_home:/var/atlassian/application-data/jira
+      - ./mysql-connector-java-5.1.47.jar:/opt/atlassian/jira/lib/mysql-connector-java-5.1.47.jar
+    environment:
+      ATL_PROXY_NAME: [DOMAIN]
+      ATL_PROXY_PORT: 443
+      ATL_TOMCAT_SCHEME: https
+      ATL_TOMCAT_SECURE: 'true'
+    ports:
+      - [JIRA-PORT]:8080
+    depends_on:
+      - mysql
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    environment:
+      PMA_HOST: mysql
+      PMA_ABSOLUTE_URI: https://[DOMAIN-PMA]
+    ports:
+      - [PMA-PORT]:80
+    restart: always
+
